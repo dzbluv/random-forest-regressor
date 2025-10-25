@@ -1,52 +1,35 @@
-# 🌲 TreeForge — Random Forest Regressor (WIP)
+# 🌲 Random Forest Regressor — From Scratch (WIP)
 
 ### 🔎 Overview  
-**TreeForge** is a from-scratch implementation of a **Random Forest Regressor** built entirely with **NumPy**.  
-The project focuses on understanding how ensemble learning models like Random Forests operate at a low level — including tree construction, splitting logic, and recursive learning.
+This project is a **from-scratch implementation of a Random Forest Regressor** using **NumPy**, built to understand the core mechanisms behind ensemble learning.  
 
-At its current stage, the code implements the **core decision tree logic** that serves as the foundation for the forest.  
-Further updates will introduce randomization, bootstrapping, and multi-tree aggregation.
+It starts with the foundation — implementing decision trees manually — and will gradually expand into a full random forest model with bootstrapping, random feature selection, and prediction aggregation.
 
 ---
 
 ### ⚙️ Features  
-- 🧩 `TNode` class representing tree nodes  
-- 🌿 Recursive `build_tree()` function  
-- 🎯 Optimal split selection using Mean Squared Error (MSE)  
-- ⛔ Stopping conditions:
-  - Minimum samples per split or leaf  
-  - Maximum depth limit  
-- 🧠 Clear, educational structure for understanding regression trees  
+- Custom `TNode` class representing tree nodes  
+- Recursive `build_tree()` function for constructing regression trees  
+- `find_best_split()` using Mean Squared Error (MSE)  
+- Configurable parameters:
+  - Minimum samples per split and leaf  
+  - Maximum tree depth  
+- Simple and transparent structure for educational purposes  
 
 ---
 
 ### 🧠 How It Works  
-1. **Tree Building**  
-   The algorithm searches across all features and thresholds to find the split that minimizes MSE.  
-2. **Node Creation**  
+1. **Tree Construction:**  
+   For each node, the algorithm searches for the best feature and threshold to minimize MSE.  
+2. **Node Representation:**  
    Each node stores:
-   - `index`: feature index used for the split  
+   - `index`: splitting feature index  
    - `value`: threshold value  
-   - `prediction`: mean of the target values  
-3. **Recursion**  
-   The tree recursively expands until the stopping criteria are met.  
-4. **Foundation for Forests**  
-   These trees will later be combined using:
-   - Bootstrapped data samples  
-   - Random feature selection  
-   - Averaged predictions across all trees  
+   - `prediction`: mean of the target values in that node  
+3. **Recursive Growth:**  
+   The tree expands recursively until stopping conditions are met.  
+4. **Future Extension:**  
+   Multiple trees will later be trained on bootstrapped data and combined to form a Random Forest.
 
 ---
-
-### 🧩 Example Usage  
-
-```python
-import numpy as np
-from forest import build_tree  # replace 'forest.py' with your file name
-
-# Example data
-X = np.array([[2.3], [1.9], [3.2], [2.7], [3.8]])
-y = np.array([1.4, 1.3, 2.1, 1.8, 2.5])
-
-# Build a regression tree
-tree = build_tree(X, y, min_samples_split=2, max_depth=3)
+...
