@@ -1,4 +1,8 @@
 import numpy as np
+import pandas as pd
+
+np.random.seed(42)
+
 
 class TNode:
     def __init__(self):
@@ -8,16 +12,23 @@ class TNode:
         self.left_child = None 
         self.right_child = None
 
-def find_best_split(x, y, min_samples_leaf=1):
+def find_best_split(x, y, min_samples_leaf=1, max_features=None):
     X = np.array(x)
     Y = np.array(y)
     num_samples, num_features = np.shape(X)
+
+    if max_features is None:
+        max_features = num_features
+    else:
+        max_features = min(max_features, num_features)
+    
+    feature_indices = np.random.choice(num_features, max_features, replace=False)
 
     best_feature = None
     best_threshold = None
     best_mse = float('inf')
 
-    for i in range(num_features):
+    for i in feature_indices:
         order = np.argsort(X[:, i])
         xs = X[order, i]
         ys = Y[order]
@@ -61,7 +72,7 @@ def build_tree(x, y, min_samples_split=2, min_samples_leaf=1, depth=0, max_depth
         return leaf
 
     # find the best split
-    best_feature, best_threshold, best_mse = find_best_split(X, Y, min_samples_leaf)
+    best_feature, best_threshold, best_mse = find_best_split(X, Y, min_samples_leaf, max_features=int(np.sqrt(X.shape[1])))
 
     # no valid split found
     if best_feature is None:
@@ -94,3 +105,54 @@ def build_tree(x, y, min_samples_split=2, min_samples_leaf=1, depth=0, max_depth
     node.right_child = build_tree(xr, yr, min_samples_split, min_samples_leaf, depth+1, max_depth)
 
     return node
+
+def predict_one(node, x):
+    if ( node.left_child is None and node.right_child is None ):
+        return node.prediction
+    else:
+        if (x[node.index] <= node.value ):
+            return predict_one(node.left_child, x)
+        else:
+            return predict_one(node.right_child, x)
+
+def predict(tree, X):
+    predictions =[]
+    for i in range(len(X)):
+        predictions.append(predict_one(tree,X[i]))
+    return np.array(predictions)
+
+def bootstrap(X, y):
+    n = len(X)
+    idxs = np.random.choice(n, n, replace=True)
+    X_sample = X[idxs]
+    y_sample = y[idxs]
+    return X_sample, y_sample
+
+def build_forest(X, y, n_trees=100, max_depth=4, min_samples_split=2, min_samples_leaf=1):
+    forest =[]
+    for i in range(n_trees):
+        xs , ys = bootstrap(X, y)
+        xs = np.array(xs)
+        ys = np.array(ys)
+        tree = build_tree(xs, ys, min_samples_split, min_samples_leaf, depth=0, max_depth=max_depth)
+        forest.append(tree)
+    return forest
+
+def predict_forest(forest, X):
+    # Collect predictions from all trees
+    all_preds = []
+    for tree in forest:
+        preds = predict(tree, X)
+        all_preds.append(preds)
+
+    # Convert to NumPy array for easy averaging
+    all_preds = np.array(all_preds)  # shape: (n_trees, n_samples)
+
+    # Average predictions across all trees
+    final_predictions = np.mean(all_preds, axis=0)
+    return final_predictions
+
+def mean_squared_error(y_true, y_pred):
+    return np.mean((y_true - y_pred) ** 2)
+
+
